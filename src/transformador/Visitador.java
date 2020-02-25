@@ -170,11 +170,6 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 		/**************************/
 		/********* METODO *********/
 		/**************************/
-		ClassOrInterfaceType staticType = new ClassOrInterfaceType();
-		staticType.setName("static Object");
-		ReferenceType referenceType = new ReferenceType();
-		referenceType.setArrayCount(1);
-		referenceType.setType(staticType);
 
 		MethodDeclaration newMethod = new MethodDeclaration();
 		BlockStmt methodBody = new BlockStmt();
@@ -214,7 +209,8 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 
 		newMethod.setBody(blockWrapper(methodBody));
 		newMethod.setName(nameMethod + contador);
-		newMethod.setType(referenceType);
+		newMethod.setType(refType);
+		newMethod.setModifiers(methodDeclaration.getModifiers());
 		newMethod.setParameters(loopVariables.getParameters());
 		
 		// Anyadimos el nuevo metodo a la clase actual
