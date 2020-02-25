@@ -219,6 +219,157 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 		return ifStmt;
 	}
 
+	// Visitador de sentencias "while"
+	public Node visit(DoStmt doStmt, Object args){
+		/**************************/
+		/******** LLAMADOR ********/
+		/**************************/
+		// Creamos un objeto Loop que sirve para examinar bucles
+		Loop loop = new While(null, null, doStmt);
+		// El objeto Loop nos calcula la lista de variables declaradas en el m�todo y usadas en el bucle (la intersecci�n)
+		List<Variable> variables = loop.getUsedVariables(methodDeclaration);
+		// Creamos un objeto LoopVariables que sirve para convertir la lista de variables en lista de argumentos y par�metros
+		LoopVariables loopVariables = new LoopVariables(variables);
+		// El objeto LoopVariables nos calcula la lista de argumentos del m�todo
+		List<Expression> arguments = loopVariables.getArgs();
+
+		//Creamos el if
+		IfStmt ifStmt = new IfStmt();
+		Expression cond = doStmt.getCondition();
+		//Asignamos la condicion
+		ifStmt.setCondition(cond);
+
+		//Object[] result = this.***metodo_x***()
+		MethodCallExpr methodCall = new MethodCallExpr();
+		methodCall.setName(nameMethod + contador);
+		methodCall.setArgs(arguments);
+
+		//***Object***[] result = this.metodo_x()
+		ClassOrInterfaceType objType = new ClassOrInterfaceType();
+		objType.setName("Object");
+
+		//***Object[]*** result = this.metodo_x()
+		ReferenceType refType = new ReferenceType();
+		refType.setArrayCount(1);
+		refType.setType(objType);
+
+		//Object[] result ***=*** this.metodo_x()
+		NameExpr resultExpr = new NameExpr("result");
+		List<VariableDeclarator> vars = new LinkedList<VariableDeclarator>();
+		VariableDeclarator var = new VariableDeclarator();
+		VariableDeclaratorId varId = new VariableDeclaratorId();
+		varId.setName(resultExpr.getName());
+		vars.add(var);
+		var.setId(varId);
+		var.setInit(methodCall);
+
+		//***Object[] result*** = this.metodo_x()
+		VariableDeclarationExpr varDecExpr = new VariableDeclarationExpr();
+		varDecExpr.setType(refType);
+		varDecExpr.setVars(vars);
+
+		//***Object[] result = this.metodo_x()***
+		ExpressionStmt exprStmt = new ExpressionStmt();
+		exprStmt.setExpression(varDecExpr);
+
+		//Creamos el bloque de statements
+		BlockStmt blockStmt = new BlockStmt();
+		//Asignamos el then
+		ifStmt.setThenStmt(blockStmt);
+		List<Statement> statements = new LinkedList<Statement>();
+		//Añadimos el body del while
+		statements.add(exprStmt);
+
+		//Object[] result = this.metodo_x(***int*** x, ***int*** y)
+		//Obtenemos los tipos de las variables
+		List<Type> types = loopVariables.getReturnTypes();
+		//Object[] result = this.metodo_x(int ***x***, int ***y***)
+		//Obtenemos los nombres de las variables
+		List<String> names = loopVariables.getReturnNames();
+		//Asignacion de las variables del bucle
+		for(int i = 0; i < variables.size(); i++){
+			//result[0]
+			ArrayAccessExpr arrayAccessExpr = new ArrayAccessExpr();
+			IntegerLiteralExpr literalExpr = new IntegerLiteralExpr();
+			literalExpr.setValue(String.valueOf(i));
+			arrayAccessExpr.setIndex(literalExpr);
+			arrayAccessExpr.setName(resultExpr);
+			//Integer
+			Type type = types.get(i);
+			//Cast que une los dos
+			CastExpr castExpr = new CastExpr();
+			castExpr.setType(getWrapper(type));
+			castExpr.setExpr(arrayAccessExpr);
+			//=
+			AssignExpr.Operator operator = AssignExpr.Operator.assign;
+			//Var1
+			String name = names.get(i);
+			NameExpr nameExpr = new NameExpr(name);
+			//AssingExpr que contiene la Var1, el = y el Integer result[0]
+			AssignExpr assignExpr = new AssignExpr();
+			assignExpr.setValue(castExpr);
+			assignExpr.setOperator(operator);
+			assignExpr.setTarget(nameExpr);
+			ExpressionStmt stmt = new ExpressionStmt();
+			stmt.setExpression(assignExpr);
+			statements.add(stmt);
+		}
+
+		//Establecemos el bloque de statements
+		blockStmt.setStmts(statements);
+
+		/**************************/
+		/********* METODO *********/
+		/**************************/
+
+		MethodDeclaration newMethod = new MethodDeclaration();
+		BlockStmt methodBody = new BlockStmt();
+		List<Statement> bodyStmts = new LinkedList<Statement>();
+		bodyStmts.add(doStmt.getBody()); //cuerpo del while
+
+		//Creamos el if
+		IfStmt ifMethod = new IfStmt();
+		//Asignamos la condicion
+		ifMethod.setCondition(cond);
+
+		ReturnStmt ifReturn = new ReturnStmt();
+		ifReturn.setExpr(methodCall);
+
+		//Creamos el bloque de statements
+		BlockStmt blockIf = new BlockStmt();
+		List<Statement> ifStmts = new LinkedList<Statement>();
+		//Asignamos el then
+		ifMethod.setThenStmt(blockIf);
+		ifStmts.add(ifReturn);
+		blockIf.setStmts(ifStmts);
+		bodyStmts.add(ifMethod); //if en el cuerpo del metodo
+
+		//return new object[] {vars};
+		ReturnStmt returnStmt = new ReturnStmt();
+
+		ArrayCreationExpr arrayCreationExpr = new ArrayCreationExpr();
+		arrayCreationExpr.setType(objType);
+		arrayCreationExpr.setArrayCount(1);
+		ArrayInitializerExpr arrayInitializerExpr = new ArrayInitializerExpr();
+		arrayInitializerExpr.setValues(arguments);
+		arrayCreationExpr.setInitializer(arrayInitializerExpr);
+
+		returnStmt.setExpr(arrayCreationExpr);
+		bodyStmts.add(returnStmt);
+		methodBody.setStmts(bodyStmts);
+
+		newMethod.setBody(blockWrapper(methodBody));
+		newMethod.setName(nameMethod + contador);
+		newMethod.setType(refType);
+		newMethod.setModifiers(methodDeclaration.getModifiers());
+		newMethod.setParameters(loopVariables.getParameters());
+
+		// Anyadimos el nuevo metodo a la clase actual
+		this.classDeclaration.getMembers().add(newMethod);
+		contador++; //Incrementamos el contador de whiles
+		return ifStmt;
+	}
+
 	// Dada un tipo, 
 	// Si es un tipo primitivo, devuelve el wrapper correspondiente 
 	// Si es un tipo no primitivo, lo devuelve
