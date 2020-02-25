@@ -170,31 +170,56 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 		/**************************/
 		/********* METODO *********/
 		/**************************/
+		ClassOrInterfaceType staticType = new ClassOrInterfaceType();
+		staticType.setName("static Object");
+		ReferenceType referenceType = new ReferenceType();
+		referenceType.setArrayCount(1);
+		referenceType.setType(staticType);
+
 		MethodDeclaration newMethod = new MethodDeclaration();
 		BlockStmt methodBody = new BlockStmt();
 		List<Statement> bodyStmts = new LinkedList<Statement>();
-		bodyStmts.add(whileStmt.getBody());
-		methodBody.setStmts(bodyStmts);
-		newMethod.setBody(methodBody);
-		newMethod.setName(nameMethod + contador);
-		newMethod.setType(refType);
-		newMethod.setParameters(loopVariables.getParameters());
+		bodyStmts.add(whileStmt.getBody()); //cuerpo del while
 
 		//Creamos el if
 		IfStmt ifMethod = new IfStmt();
-		Expression expression = whileStmt.getCondition();
 		//Asignamos la condicion
-		ifMethod.setCondition(expression);
+		ifMethod.setCondition(cond);
+
+		ReturnStmt ifReturn = new ReturnStmt();
+		ifReturn.setExpr(methodCall);
+
 		//Creamos el bloque de statements
 		BlockStmt blockIf = new BlockStmt();
+		List<Statement> ifStmts = new LinkedList<Statement>();
 		//Asignamos el then
 		ifMethod.setThenStmt(blockIf);
+		ifStmts.add(ifReturn);
+		blockIf.setStmts(ifStmts);
+		bodyStmts.add(ifMethod); //if en el cuerpo del metodo
+
+		//return new object[] {vars};
 		ReturnStmt returnStmt = new ReturnStmt();
-		returnStmt.setExpr();
+
+		ArrayCreationExpr arrayCreationExpr = new ArrayCreationExpr();
+		arrayCreationExpr.setType(objType);
+		arrayCreationExpr.setArrayCount(1);
+		ArrayInitializerExpr arrayInitializerExpr = new ArrayInitializerExpr();
+		arrayInitializerExpr.setValues(arguments);
+		arrayCreationExpr.setInitializer(arrayInitializerExpr);
+
+		returnStmt.setExpr(arrayCreationExpr);
+		bodyStmts.add(returnStmt);
+		methodBody.setStmts(bodyStmts);
+
+		newMethod.setBody(blockWrapper(methodBody));
+		newMethod.setName(nameMethod + contador);
+		newMethod.setType(referenceType);
+		newMethod.setParameters(loopVariables.getParameters());
 		
 		// Anyadimos el nuevo metodo a la clase actual
 		this.classDeclaration.getMembers().add(newMethod);
-		contador++;
+		contador++; //Incrementamos el contador de whiles
 		return ifStmt;
 	}
 
