@@ -5,14 +5,21 @@ public class Ejemplo_Bucles_3_trans {
     public static void main(String[] args) {
         int x;
         System.out.println("Empieza bucle FOR:");
-        for (x = 1; x <= 10; x++) {
-            System.out.print(" " + x);
+        {
+            {
+                System.out.print(" " + x);
+            }
+            x = 1;
+            if (x <= 10) {
+                Object[] result = method_loop_1(x);
+                x = (Integer) result[0];
+            }
         }
         System.out.println();
         System.out.println("Empieza bucle WHILE:");
         x = 1;
         if (x <= 10) {
-            Object[] result = method_loop_1(x);
+            Object[] result = method_loop_2(x);
             x = (Integer) result[0];
         }
         System.out.println();
@@ -24,7 +31,7 @@ public class Ejemplo_Bucles_3_trans {
                 x++;
             }
             if (x <= 10) {
-                Object[] result = method_loop_2(x);
+                Object[] result = method_loop_3(x);
                 x = (Integer) result[0];
             }
         }
@@ -34,8 +41,8 @@ public class Ejemplo_Bucles_3_trans {
     public static Object[] method_loop_1(int x) {
         {
             System.out.print(" " + x);
-            x++;
         }
+        x++;
         if (x <= 10) {
             return method_loop_1(x);
         }
@@ -49,6 +56,17 @@ public class Ejemplo_Bucles_3_trans {
         }
         if (x <= 10) {
             return method_loop_2(x);
+        }
+        return new Object[] { x };
+    }
+
+    public static Object[] method_loop_3(int x) {
+        {
+            System.out.print(" " + x);
+            x++;
+        }
+        if (x <= 10) {
+            return method_loop_3(x);
         }
         return new Object[] { x };
     }

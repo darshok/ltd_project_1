@@ -1,6 +1,7 @@
 package transformador;
 
 import iter2rec.transformation.loop.Do;
+import iter2rec.transformation.loop.For;
 import iter2rec.transformation.loop.Loop;
 import iter2rec.transformation.loop.While;
 import iter2rec.transformation.variable.LoopVariables;
@@ -18,7 +19,6 @@ import japa.parser.ast.type.ReferenceType;
 import japa.parser.ast.type.Type;
 import japa.parser.ast.visitor.ModifierVisitorAdapter;
 
-import java.awt.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -72,7 +72,8 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 	// Visitador de sentencias "while"
 	public Node visit(WhileStmt whileStmt, Object args)
 	{
-		return whileToIf(whileStmt, args);
+		System.out.println("While");
+		return loopToIf(whileStmt, args);
 	}
 
 	// Visitador de sentencias "do while"
@@ -81,14 +82,35 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 		BlockStmt blockStmt = new BlockStmt();
 		List<Statement> statements = new LinkedList<Statement>();
 		statements.add(doStmt.getBody());
-		statements.add(whileToIf(doStmt,args));
+		statements.add(loopToIf(doStmt,args));
 
 		blockStmt.setStmts(statements);
 
 		return blockStmt;
 	}
 
-	public IfStmt whileToIf(Statement statement, Object args){
+	// Visitador de sentencias "for"
+	@Override
+	public Node visit(ForStmt forStmt, Object args){
+
+		System.out.println("For");
+		BlockStmt blockStmt = new BlockStmt();
+		List<Statement> statements = new LinkedList<Statement>();
+		statements.add(forStmt.getBody());
+
+		List<Expression> iniFor = forStmt.getInit();
+		ExpressionStmt expressionStmt = new ExpressionStmt();
+		for(Expression expression : iniFor){
+			expressionStmt.setExpression(expression);
+			statements.add(expressionStmt);
+		}
+
+		statements.add(loopToIf(forStmt,args));
+		blockStmt.setStmts(statements);
+		return blockStmt;
+	}
+
+	public IfStmt loopToIf(Statement statement, Object args){
 		/**************************/
 		/******** LLAMADOR ********/
 		/**************************/
@@ -96,8 +118,10 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 		Loop loop = null;
 		if(statement instanceof WhileStmt){
 			loop = new While(null, null, statement);
-		} else {
+		} else if(statement instanceof DoStmt) {
 			loop = new Do(null, null, statement);
+		} else {
+			loop = new For(null, null, statement);
 		}
 		// El objeto Loop nos calcula la lista de variables declaradas en el m�todo y usadas en el bucle (la intersecci�n)
 		List<Variable> variables = loop.getUsedVariables(methodDeclaration);
@@ -112,9 +136,12 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 		if(statement instanceof WhileStmt) {
 			WhileStmt whileStmt = (WhileStmt) statement;
 			cond = whileStmt.getCondition();
-		} else {
+		} else if(statement instanceof DoStmt) {
 			DoStmt doStmt = (DoStmt) statement;
 			cond = doStmt.getCondition();
+		} else {
+			ForStmt forStmt = (ForStmt) statement;
+			cond = forStmt.getCompare();
 		}
 
 		//Asignamos la condicion
@@ -209,9 +236,18 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 		if(statement instanceof WhileStmt) {
 			WhileStmt whileStmt = (WhileStmt) statement;
 			bodyStmts.add(whileStmt.getBody()); //cuerpo del while
-		} else {
+		} else if(statement instanceof DoStmt) {
 			DoStmt doStmt = (DoStmt) statement;
-			bodyStmts.add(doStmt.getBody()); //cuerpo del while
+			bodyStmts.add(doStmt.getBody()); //cuerpo del do
+		} else {
+			ForStmt forStmt = (ForStmt) statement;
+			bodyStmts.add(forStmt.getBody()); //cuerpo del for
+			List<Expression> updFor = forStmt.getUpdate();
+			ExpressionStmt expressionStmt = new ExpressionStmt();
+			for (Expression expression : updFor) {
+				expressionStmt.setExpression(expression);
+				bodyStmts.add(expressionStmt);
+			}
 		}
 
 		//Creamos el if

@@ -19,13 +19,22 @@ public class Ejemplo_Bucles_4_trans {
         int sumatorio = 0;
         int min = 10;
         int max = 100;
-        for (int num = min; num <= max; num++) {
-            sumatorio += num;
+        {
+            {
+                sumatorio += num;
+            }
+            int num = min;
+            if (num <= max) {
+                Object[] result = method_loop_3(sumatorio, max, num);
+                sumatorio = (Integer) result[0];
+                max = (Integer) result[1];
+                num = (Integer) result[2];
+            }
         }
         System.out.println(sumatorio);
         int count = 0;
         if (count < 10) {
-            Object[] result = method_loop_3(count);
+            Object[] result = method_loop_4(count);
             count = (Integer) result[0];
         }
         System.out.println(count);
@@ -53,10 +62,21 @@ public class Ejemplo_Bucles_4_trans {
         return new Object[] { suma, y };
     }
 
-    public static Object[] method_loop_3(int count) {
+    public static Object[] method_loop_3(int sumatorio, int max, int num) {
+        {
+            sumatorio += num;
+        }
+        num++;
+        if (num <= max) {
+            return method_loop_3(sumatorio, max, num);
+        }
+        return new Object[] { sumatorio, max, num };
+    }
+
+    public static Object[] method_loop_4(int count) {
         count++;
         if (count < 10) {
-            return method_loop_3(count);
+            return method_loop_4(count);
         }
         return new Object[] { count };
     }
