@@ -20,9 +20,6 @@ public class Ejemplo_Bucles_4_trans {
         int min = 10;
         int max = 100;
         {
-            {
-                sumatorio += num;
-            }
             int num = min;
             if (num <= max) {
                 Object[] result = method_loop_3(sumatorio, max, num);

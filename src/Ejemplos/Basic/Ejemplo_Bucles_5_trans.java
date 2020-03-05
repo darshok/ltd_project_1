@@ -7,19 +7,6 @@ public class Ejemplo_Bucles_5_trans {
         char y = '0';
         System.out.println("Empieza bucle FOR anidado a otro FOR:");
         {
-            {
-                System.out.print(" " + x);
-                {
-                    {
-                        System.out.print(" " + y);
-                    }
-                    y = 'a';
-                    if (y <= 'c') {
-                        Object[] result = method_loop_4(y);
-                        y = (Character) result[0];
-                    }
-                }
-            }
             x = 1;
             if (x <= 10) {
                 Object[] result = method_loop_1(x, y);
@@ -42,9 +29,6 @@ public class Ejemplo_Bucles_5_trans {
             {
                 System.out.print(" " + x);
                 {
-                    {
-                        System.out.print(" " + y);
-                    }
                     y = 'a';
                     if (y <= 'c') {
                         Object[] result = method_loop_6(y);
@@ -66,9 +50,6 @@ public class Ejemplo_Bucles_5_trans {
         {
             System.out.print(" " + x);
             {
-                {
-                    System.out.print(" " + y);
-                }
                 y = 'a';
                 if (y <= 'c') {
                     Object[] result = method_loop_4(y);
@@ -103,9 +84,6 @@ public class Ejemplo_Bucles_5_trans {
         {
             System.out.print(" " + x);
             {
-                {
-                    System.out.print(" " + y);
-                }
                 y = 'a';
                 if (y <= 'c') {
                     Object[] result = method_loop_6(y);

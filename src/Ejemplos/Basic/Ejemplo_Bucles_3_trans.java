@@ -6,9 +6,6 @@ public class Ejemplo_Bucles_3_trans {
         int x;
         System.out.println("Empieza bucle FOR:");
         {
-            {
-                System.out.print(" " + x);
-            }
             x = 1;
             if (x <= 10) {
                 Object[] result = method_loop_1(x);

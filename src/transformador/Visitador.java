@@ -72,7 +72,6 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 	// Visitador de sentencias "while"
 	public Node visit(WhileStmt whileStmt, Object args)
 	{
-		System.out.println("While");
 		return loopToIf(whileStmt, args);
 	}
 
@@ -93,10 +92,9 @@ public class Visitador extends ModifierVisitorAdapter<Object>
 	@Override
 	public Node visit(ForStmt forStmt, Object args){
 
-		System.out.println("For");
 		BlockStmt blockStmt = new BlockStmt();
 		List<Statement> statements = new LinkedList<Statement>();
-		statements.add(forStmt.getBody());
+		//statements.add(forStmt.getBody());
 
 		List<Expression> iniFor = forStmt.getInit();
 		ExpressionStmt expressionStmt = new ExpressionStmt();
